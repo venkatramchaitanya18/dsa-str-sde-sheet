@@ -1,0 +1,450 @@
+/*
+ * ============================================================================
+ *                  COUNT SUBARRAYS WITH GIVEN XOR (PREFIX XOR + HASHMAP)
+ * ============================================================================
+ * Difficulty : Medium
+ *
+ * Time Complexity  : O(n)
+ * Space Complexity : O(n)
+ *
+ * ============================================================================
+ * Problem Statement
+ * ============================================================================
+ *
+ * Given an array arr[] and an integer k,
+ * return the number of subarrays whose XOR equals k.
+ *
+ * Example:
+ *
+ * Input:
+ * arr = [4, 2, 2, 6, 4]
+ * k = 6
+ *
+ * Output:
+ * 4
+ *
+ * Explanation:
+ *
+ * Subarrays are:
+ *
+ * [4,2]
+ * [2,2,6]
+ * [6]
+ * [4,2,2,6,4]
+ *
+ * Therefore,
+ * Answer = 4
+ *
+ * ============================================================================
+ * Intuition
+ * ============================================================================
+ *
+ * A brute-force solution checks every possible subarray,
+ * resulting in O(n²) time complexity.
+ *
+ * Instead,
+ * use Prefix XOR and HashMap.
+ *
+ * Prefix XOR stores the XOR of all elements
+ * from index 0 to the current index.
+ *
+ * We know:
+ *
+ * PrefixXOR(before subarray) ^ PrefixXOR(current) = Subarray XOR
+ *
+ * Therefore,
+ *
+ * previousPrefixXOR = currentPrefixXOR ^ k
+ *
+ * While traversing the array,
+ * search whether (currentPrefixXOR ^ k)
+ * already exists.
+ *
+ * ============================================================================
+ */
+
+import java.util.*;
+
+class Solution {
+
+    public long subarrayXor(int arr[], int k) {
+
+        // Key   -> Prefix XOR
+        // Value -> Frequency of Prefix XOR
+        HashMap<Integer, Integer> map = new HashMap<>();
+
+        int xr = 0;
+        long count = 0;
+
+        // Prefix XOR = 0 occurs once
+        map.put(0, 1);
+
+        // Traverse the array
+        for (int i = 0; i < arr.length; i++) {
+
+            // Calculate Prefix XOR
+            xr ^= arr[i];
+
+            // Check if (xr ^ k) already exists
+            if (map.containsKey(xr ^ k)) {
+                count += map.get(xr ^ k);
+            }
+
+            // Increase frequency of current Prefix XOR
+            map.put(xr, map.getOrDefault(xr, 0) + 1);
+        }
+
+        return count;
+    }
+}
+
+/*
+ * ============================================================================
+ * Algorithm
+ * ============================================================================
+ *
+ * Step 1:
+ * Initialize:
+ *
+ * Prefix XOR = 0
+ *
+ * count = 0
+ *
+ * HashMap
+ *
+ * Store:
+ *
+ * map.put(0,1)
+ *
+ * --------------------------------------------------------------------------
+ *
+ * Step 2:
+ *
+ * Traverse the array.
+ *
+ * xr ^= arr[i]
+ *
+ * --------------------------------------------------------------------------
+ *
+ * Step 3:
+ *
+ * Search:
+ *
+ * xr ^ k
+ *
+ * If found,
+ * add its frequency to the answer.
+ *
+ * --------------------------------------------------------------------------
+ *
+ * Step 4:
+ *
+ * Store the current Prefix XOR
+ * by increasing its frequency.
+ *
+ * ============================================================================
+ * Dry Run
+ * ============================================================================
+ *
+ * Input:
+ *
+ * arr = [4,2,2,6,4]
+ *
+ * k = 6
+ *
+ * Initially
+ *
+ * xr = 0
+ *
+ * Map:
+ *
+ * {0 → 1}
+ *
+ * --------------------------------------------------------------------------
+ *
+ * i = 0
+ *
+ * xr = 4
+ *
+ * Search:
+ *
+ * 4 ^ 6 = 2
+ *
+ * Not found.
+ *
+ * Store:
+ *
+ * {0→1,4→1}
+ *
+ * --------------------------------------------------------------------------
+ *
+ * i = 1
+ *
+ * xr = 6
+ *
+ * Search:
+ *
+ * 6 ^ 6 = 0
+ *
+ * Found.
+ *
+ * count = 1
+ *
+ * Store:
+ *
+ * {0→1,4→1,6→1}
+ *
+ * --------------------------------------------------------------------------
+ *
+ * i = 2
+ *
+ * xr = 4
+ *
+ * Search:
+ *
+ * 4 ^ 6 = 2
+ *
+ * Not found.
+ *
+ * Store:
+ *
+ * {0→1,4→2,6→1}
+ *
+ * --------------------------------------------------------------------------
+ *
+ * i = 3
+ *
+ * xr = 2
+ *
+ * Search:
+ *
+ * 2 ^ 6 = 4
+ *
+ * Frequency of 4 = 2
+ *
+ * count = 3
+ *
+ * --------------------------------------------------------------------------
+ *
+ * i = 4
+ *
+ * xr = 6
+ *
+ * Search:
+ *
+ * 6 ^ 6 = 0
+ *
+ * Frequency = 1
+ *
+ * count = 4
+ *
+ * Final Answer = 4
+ *
+ * ============================================================================
+ * Why do we search (xr ^ k)?
+ * ============================================================================
+ *
+ * Let:
+ *
+ * current Prefix XOR = xr
+ *
+ * previous Prefix XOR = p
+ *
+ * Required XOR = k
+ *
+ * We know:
+ *
+ * p ^ xr = k
+ *
+ * XOR both sides with xr:
+ *
+ * p ^ xr ^ xr = k ^ xr
+ *
+ * Since:
+ *
+ * xr ^ xr = 0
+ *
+ * We get:
+ *
+ * p = xr ^ k
+ *
+ * Therefore,
+ * we search:
+ *
+ * xr ^ k
+ *
+ * ============================================================================
+ * Why map.put(0,1)?
+ * ============================================================================
+ *
+ * Before the array starts,
+ * Prefix XOR is 0.
+ *
+ * Example:
+ *
+ * arr = [6]
+ *
+ * k = 6
+ *
+ * xr = 6
+ *
+ * Search:
+ *
+ * 6 ^ 6 = 0
+ *
+ * Since
+ *
+ * 0 → 1
+ *
+ * already exists,
+ * the subarray starting from index 0
+ * is counted automatically.
+ *
+ * ============================================================================
+ * Common Mistakes I Made
+ * ============================================================================
+ *
+ * ❌ Used:
+ *
+ * map.put(xr, map.getOrDefault(i,0)+1);
+ *
+ * Wrong because
+ * HashMap stores Prefix XOR,
+ * not array index.
+ *
+ * Correct:
+ *
+ * map.put(xr,
+ *         map.getOrDefault(xr,0)+1);
+ *
+ * --------------------------------------------------------------------------
+ *
+ * ❌ Stored index instead of frequency.
+ *
+ * This problem requires
+ * frequency,
+ * not index.
+ *
+ * --------------------------------------------------------------------------
+ *
+ * ❌ Forgot to initialize:
+ *
+ * map.put(0,1);
+ *
+ * This causes subarrays
+ * starting from index 0
+ * to be missed.
+ *
+ * ============================================================================
+ * Pattern Comparison
+ * ============================================================================
+ *
+ * Longest Subarray Sum = K
+ *
+ * Formula:
+ *
+ * preSum - k
+ *
+ * HashMap stores:
+ *
+ * Prefix Sum → First Index
+ *
+ * --------------------------------------------------------------------------
+ *
+ * Count Subarrays Sum = K
+ *
+ * Formula:
+ *
+ * preSum - k
+ *
+ * HashMap stores:
+ *
+ * Prefix Sum → Frequency
+ *
+ * --------------------------------------------------------------------------
+ *
+ * Count Subarrays XOR = K
+ *
+ * Formula:
+ *
+ * Prefix XOR ^ k
+ *
+ * HashMap stores:
+ *
+ * Prefix XOR → Frequency
+ *
+ * ============================================================================
+ * Interview Follow-up
+ * ============================================================================
+ *
+ * Q1. Why use XOR instead of subtraction?
+ *
+ * Because XOR follows:
+ *
+ * a ^ b = c
+ *
+ * then
+ *
+ * a = b ^ c
+ *
+ * which allows us to derive
+ * the required previous Prefix XOR.
+ *
+ * --------------------------------------------------------------------------
+ *
+ * Q2. Why use a HashMap?
+ *
+ * It provides O(1) average lookup time,
+ * making the overall algorithm O(n).
+ *
+ * ============================================================================
+ * Real-World Applications
+ * ============================================================================
+ *
+ * 1. Cryptography
+ * ----------------
+ * XOR is widely used in encryption,
+ * decryption, and secure communication.
+ *
+ * --------------------------------------------------------------------------
+ *
+ * 2. Error Detection
+ * ------------------
+ * XOR helps detect transmission errors
+ * in communication systems.
+ *
+ * --------------------------------------------------------------------------
+ *
+ * 3. Digital Circuits
+ * -------------------
+ * XOR gates are fundamental components
+ * in CPUs, ALUs, and parity generators.
+ *
+ * ============================================================================
+ * Pattern to Remember
+ * ============================================================================
+ *
+ * Whenever the problem asks:
+ *
+ * "Count Subarrays with XOR K"
+ *
+ * Think:
+ *
+ * Prefix XOR
+ *       ↓
+ * HashMap (Frequency)
+ *       ↓
+ * Search (xr ^ k)
+ *       ↓
+ * Add Frequency
+ *
+ * Similar Problems:
+ *
+ * ✔ Count Subarrays with Given XOR
+ * ✔ Maximum XOR of Two Numbers
+ * ✔ XOR Queries of a Subarray
+ * ✔ Prefix XOR Problems
+ *
+ * ============================================================================
+ */
+```
